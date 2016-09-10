@@ -71,6 +71,7 @@ namespace NetDemo
                     sr.Close();
                     if (textBox1.Text != contests)
                     {
+                        //ここでbotの出番
                         MessageBox.Show("新しいコンテストです\r\n" + textBox1.Text);
                         StreamWriter sw = new StreamWriter("contests.txt");
                         sw.Write(textBox1.Text);
