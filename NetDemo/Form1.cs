@@ -1,17 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Text.RegularExpressions;
-using System.Windows.Forms;
 using System.IO;
+using System.Linq;
 using System.Net;
-using System.Runtime.InteropServices;
-using System.Runtime.InteropServices.ComTypes;
+using System.Text;
+using System.Windows.Forms;
 
 namespace NetDemo
 {
@@ -44,6 +38,10 @@ namespace NetDemo
                 var Doc = new HtmlAgilityPack.HtmlDocument();
                 Doc.LoadHtml(text);
 
+                DateTime time;
+                DateTime now = DateTime.Now;
+                TimeSpan ts = new TimeSpan(0, 0, 0);
+
 
                 //var nodes = Doc.DocumentNode.SelectNodes("//table[@class='table table-default table-striped table-hover table-condensed']");
                 var nodes = Doc.DocumentNode.SelectNodes("//div[2]/table[@class='table table-default table-striped table-hover table-condensed']/tbody/tr/td/small/a")
@@ -57,10 +55,13 @@ namespace NetDemo
                 foreach (var node in nodes.Take(nodes.Count()))
                 {
                     textBox1.Text += node.Title + "\r\n";
-                    if(i % 2 == 0)
+                    if (i % 3 == 1)
                     {
-                        textBox1.Text += node.Url + "\r\n";
+                        time = DateTime.Parse(textBox1.Lines[i - 1]);
+                        ts = time - now;
                     }
+                    if(i % 2 == 0)
+                        textBox1.Text += node.Url + "\r\n";
                     i++;
                 }
 
@@ -79,6 +80,8 @@ namespace NetDemo
                         MessageBox.Show("書き込みが完了しました");
                     }
                     else MessageBox.Show("新しいコンテストはありません");
+
+                    textBox1.Text += "残り" + ts.Days + "日" + ts.Hours + "時間" + ts.Minutes + "分" + ts.Seconds + "秒";
                 }
                 catch(FileNotFoundException)
                 {
