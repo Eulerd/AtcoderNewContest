@@ -1,9 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Data;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Media;
 using System.Text;
 using System.Windows.Forms;
 
@@ -16,33 +16,49 @@ namespace NetDemo
             InitializeComponent();
         }
 
+        /// <summary>
+        /// コンテスト開催時間
+        /// </summary>
         private DateTime time = DateTime.Now;
+        /// <summary>
+        /// 現在の時間
+        /// </summary>
         private DateTime now = DateTime.Now;
+        /// <summary>
+        /// コンテストまでの時間(後何時間か)
+        /// </summary>
         private TimeSpan ts = new TimeSpan(0, 0, 0);
 
+        /// <summary>
+        /// Getボタンが押されたら,指定のURLから予定されたコンテストを取得
+        /// 変更の有無を表示
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void button1_Click(object sender, EventArgs e)
         {
             WebClient wc = new WebClient();
             string text = "";
             textBox1.Text = "";
-            
+
             wc.Encoding = Encoding.GetEncoding("utf-8");
 
+            //指定URLからHTMLを取得する
             try
             {
                 text = wc.DownloadString(urltextBox.Text);
             }
-            catch(WebException exc)
+            catch (WebException exc)
             {
                 MessageBox.Show(exc.Message);
             }
 
-            if(text != "")
+            if (text != "")
             {
                 var Doc = new HtmlAgilityPack.HtmlDocument();
                 Doc.LoadHtml(text);
 
-                //var nodes = Doc.DocumentNode.SelectNodes("//table[@class='table table-default table-striped table-hover table-condensed']");
+                //予定されたコンテスト部分の情報を取得
                 var nodes = Doc.DocumentNode.SelectNodes("//div[2]/table[@class='table table-default table-striped table-hover table-condensed']/tbody/tr/td/small/a")
                                         .Select(a => new
                                         {
@@ -50,20 +66,24 @@ namespace NetDemo
                                             Title = a.InnerText.Trim(),
                                         });
 
+                //取得情報をテキストボックスに書き込み
                 int i = 1;
                 foreach (var node in nodes.Take(nodes.Count()))
                 {
                     textBox1.Text += node.Title + "\r\n";
+                    //開始時間を取得
                     if (i % 3 == 1)
                     {
                         time = DateTime.Parse(textBox1.Lines[i - 1]);
                         ts = time - now;
                     }
-                    if(i % 2 == 0)
+                    //コンテストへのURLを取得
+                    if (i % 2 == 0)
                         textBox1.Text += node.Url + "\r\n";
                     i++;
                 }
 
+                //コンテスト内容をテキストで保存,変更の有無を確認
                 try
                 {
                     StreamReader sr = new StreamReader("contests.txt", Encoding.GetEncoding("utf-8"));
@@ -83,7 +103,7 @@ namespace NetDemo
                     timer1.Start();
                     timer1.Interval = 1000;
                 }
-                catch(FileNotFoundException)
+                catch (FileNotFoundException)
                 {
                     MessageBox.Show("contests.txtが見つからなかったので作成します");
                     StreamWriter sw = new StreamWriter("contests.txt");
@@ -95,6 +115,11 @@ namespace NetDemo
 
         }
 
+        /// <summary>
+        /// 予定されたコンテストまでのカウントダウンを表示
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void timer1_Tick(object sender, EventArgs e)
         {
             if (ts.TotalSeconds > 0)
@@ -106,7 +131,11 @@ namespace NetDemo
             }
             else
                 timeBox.Text = "既に始まっているか、終了しています";
+
+            //開始時間に音でお知らせ
+            if (ts.TotalSeconds == 0)
+                SystemSounds.Asterisk.Play();
         }
+
     }
-    
 }
