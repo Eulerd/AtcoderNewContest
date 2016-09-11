@@ -16,6 +16,10 @@ namespace NetDemo
             InitializeComponent();
         }
 
+        private DateTime time = DateTime.Now;
+        private DateTime now = DateTime.Now;
+        private TimeSpan ts = new TimeSpan(0, 0, 0);
+
         private void button1_Click(object sender, EventArgs e)
         {
             WebClient wc = new WebClient();
@@ -37,11 +41,6 @@ namespace NetDemo
             {
                 var Doc = new HtmlAgilityPack.HtmlDocument();
                 Doc.LoadHtml(text);
-
-                DateTime time;
-                DateTime now = DateTime.Now;
-                TimeSpan ts = new TimeSpan(0, 0, 0);
-
 
                 //var nodes = Doc.DocumentNode.SelectNodes("//table[@class='table table-default table-striped table-hover table-condensed']");
                 var nodes = Doc.DocumentNode.SelectNodes("//div[2]/table[@class='table table-default table-striped table-hover table-condensed']/tbody/tr/td/small/a")
@@ -81,7 +80,8 @@ namespace NetDemo
                     }
                     else MessageBox.Show("新しいコンテストはありません");
 
-                    textBox1.Text += "残り" + ts.Days + "日" + ts.Hours + "時間" + ts.Minutes + "分" + ts.Seconds + "秒";
+                    timer1.Start();
+                    timer1.Interval = 1000;
                 }
                 catch(FileNotFoundException)
                 {
@@ -93,6 +93,19 @@ namespace NetDemo
                 }
             }
 
+        }
+
+        private void timer1_Tick(object sender, EventArgs e)
+        {
+            if (ts.TotalSeconds > 0)
+            {
+                timeBox.Text = "残り" + ts.Days + "日" + ts.Hours + "時間" + ts.Minutes + "分" + ts.Seconds + "秒\r\n";
+                timeBox.Refresh();
+                now = DateTime.Now;
+                ts = time - now;
+            }
+            else
+                timeBox.Text = "既に始まっているか、終了しています";
         }
     }
     
